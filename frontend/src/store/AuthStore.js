@@ -121,7 +121,15 @@ export const AuthStore = create((set, get) => ({
 
   connectSocket: () => {
     const { authUser } = get();
-    if (!authUser || get().socket?.connected) return;
+    if (!authUser) return;
+
+    // Disconnect any existing stale socket before creating a new one
+    const existingSocket = get().socket;
+    if (existingSocket) {
+      if (existingSocket.connected) return; // Already connected, nothing to do
+      existingSocket.removeAllListeners();
+      existingSocket.disconnect();
+    }
 
     const socket = io(BASE_URL, {
       query: {
@@ -130,15 +138,25 @@ export const AuthStore = create((set, get) => ({
       withCredentials: true,
       transports: ["websocket", "polling"],
       reconnection: true,
-      reconnectionAttempts: 10,
+      reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
     });
     socket.connect();
 
     set({ socket: socket });
 
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+    });
+
     socket.on("getOnlineUsers", (userIds) => {
       set({ onlineUsers: userIds });
+    });
+
+    socket.on("disconnect", (reason) => {
+      console.log("Socket disconnected:", reason);
     });
 
     socket.on("connect_error", (err) => {
@@ -147,6 +165,11 @@ export const AuthStore = create((set, get) => ({
   },
 
   disconnectSocket: () => {
-    if (get().socket?.connected) get().socket.disconnect();
+    const socket = get().socket;
+    if (socket) {
+      socket.removeAllListeners();
+      socket.disconnect();
+      set({ socket: null });
+    }
   },
 }));

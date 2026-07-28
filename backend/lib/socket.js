@@ -11,22 +11,34 @@ const io = new Server(server, {
     origin: [FRONTEND_URL, "http://localhost:5173", "http://127.0.0.1:5173"],
     credentials: true,
   },
+  // Keep connections alive behind Render's reverse proxy
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  transports: ["websocket", "polling"],
+  allowUpgrades: true,
 });
+
 export function getReceiverSocketId(userId) {
   return userSocketMap[userId];
 }
+
 const userSocketMap = {};
+
 io.on("connection", (socket) => {
   console.log("A user connected", socket.id);
 
   const userId = socket.handshake.query.userId;
-  if (userId) userSocketMap[userId] = socket.id;
+  if (userId && userId !== "undefined") {
+    userSocketMap[userId] = socket.id;
+  }
 
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
   socket.on("disconnect", () => {
     console.log("A user disconnected", socket.id);
-    delete userSocketMap[userId];
+    if (userId && userId !== "undefined") {
+      delete userSocketMap[userId];
+    }
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
   });
 });

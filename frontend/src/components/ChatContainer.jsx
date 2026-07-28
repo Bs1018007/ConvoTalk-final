@@ -340,6 +340,9 @@ const ChatContainer = () => {
           const isSender = message.senderId === authUser._id;
           const isLast = index === messages.length - 1;
 
+          // Sender doesn't see deleted messages at all
+          if (isSender && message.isDeletedForEveryone) return null;
+
           return (
             <div
               key={message._id}
@@ -361,7 +364,11 @@ const ChatContainer = () => {
 
               <div className="chat-bubble flex flex-col relative group">
                 {message.isDeletedForEveryone ? (
-                  <p className="italic text-zinc-500 text-sm">This message was deleted</p>
+                  // Sender sees nothing (message removed from their view)
+                  // Receiver sees "This message was deleted"
+                  isSender ? null : (
+                    <p className="italic text-zinc-500 text-sm">This message was deleted</p>
+                  )
                 ) : (
                   <>
                     {message.image && (

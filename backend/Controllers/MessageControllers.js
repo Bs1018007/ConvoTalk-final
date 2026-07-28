@@ -98,12 +98,19 @@ export const sendMessage = async (req, res) => {
 
       if (receiverUser?.email) {
         try {
-          const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+          const FRONTEND_URL = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/+$/, "");
+          console.log("=== EMAIL NOTIFICATION ===");
+          console.log("Receiver:", receiverUser.email);
+          console.log("Sender:", senderUser.fullName);
+          console.log("EMAIL_USER configured:", !!process.env.EMAIL_USER);
+          console.log("EMAIL_PASS configured:", !!process.env.EMAIL_PASS);
           await sendNotificationMail(
             receiverUser.email,
             "📩 New message on ConvoTalk",
             `${senderUser.fullName} sent you a message. Open ConvoTalk ${FRONTEND_URL} to check it out.`
           );
+          console.log("Email sent successfully!");
+          console.log("==========================");
         } catch (mailErr) {
           console.error("Email sending failed:", mailErr.message);
         }

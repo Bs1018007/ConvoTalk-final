@@ -8,6 +8,12 @@ dotenv.config();
 const BACKEND_URL = process.env.NODE_ENV === "production" ? process.env.BACKEND_URL : "http://localhost:3000";
 const CALLBACK_URL = process.env.NODE_ENV === "production" ? `${BACKEND_URL}/auth/google/callback` : "http://localhost:3000/auth/google/callback";
 
+console.log("=== PASSPORT CONFIG ===");
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("BACKEND_URL:", process.env.BACKEND_URL);
+console.log("Computed CALLBACK_URL:", CALLBACK_URL);
+console.log("=======================");
+
 passport.use(
   new GoogleStrategy(
     {

@@ -10,7 +10,6 @@ export const generateToken = (userId, res) => {
     httpOnly: true,
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     secure: process.env.NODE_ENV === "production",
-    domain: process.env.NODE_ENV === "production" ? process.env.COOKIE_DOMAIN : undefined
   });
   console.log("Generated Token:", token);
 

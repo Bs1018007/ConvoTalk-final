@@ -104,15 +104,19 @@ export const sendMessage = async (req, res) => {
           console.log("Sender:", senderUser.fullName);
           console.log("EMAIL_USER configured:", !!process.env.EMAIL_USER);
           console.log("EMAIL_PASS configured:", !!process.env.EMAIL_PASS);
-          await sendNotificationMail(
+          const emailResult = await sendNotificationMail(
             receiverUser.email,
             "📩 New message on ConvoTalk",
             `${senderUser.fullName} sent you a message. Open ConvoTalk ${FRONTEND_URL} to check it out.`
           );
-          console.log("Email sent successfully!");
+          if (emailResult) {
+            console.log("Email sent successfully!");
+          } else {
+            console.log("Email failed to send.");
+          }
           console.log("==========================");
         } catch (mailErr) {
-          console.error("Email sending failed:", mailErr.message);
+          console.error("Email sending exception:", mailErr.message);
         }
       }
     }

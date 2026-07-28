@@ -26,7 +26,8 @@ const App = () => {
     // Only run checkAuth if you're on a protected route
     if (protectedRoutes.includes(location.pathname)) {
       if (token) {
-        document.cookie = `jwt=${token}; path=/;`;
+        // Store token in localStorage for cross-domain auth
+        localStorage.setItem("jwt_token", token);
         window.history.replaceState({}, document.title, window.location.pathname);
       }
       checkAuth();

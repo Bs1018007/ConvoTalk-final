@@ -25,8 +25,8 @@ export const AuthStore = create((set, get) => ({
       }
     } catch (error) {
       if (error.response?.status === 401) {
-        // No need to log 401 on first load
         console.log("No auth token found, user not logged in.");
+        localStorage.removeItem("jwt_token");
       } else {
         console.error("Unexpected error in checkAuth:", error);
       }
@@ -41,6 +41,10 @@ export const AuthStore = create((set, get) => ({
     set({ isSigningUp: true });
     try {
       const res = await axiosInstance.post("/api/auth/signup", data);
+      // Store token in localStorage for cross-domain auth
+      if (res.data.token) {
+        localStorage.setItem("jwt_token", res.data.token);
+      }
       set({ authUser: res.data });
       toast.success("Account created successfully");
       get().connectSocket();
@@ -55,6 +59,10 @@ export const AuthStore = create((set, get) => ({
     set({ isLoggingIn: true });
     try {
       const res = await axiosInstance.post("/api/auth/login", data);
+      // Store token in localStorage for cross-domain auth
+      if (res.data.token) {
+        localStorage.setItem("jwt_token", res.data.token);
+      }
       set({ authUser: res.data });
       toast.success("Logged in successfully");
       get().connectSocket();
@@ -76,6 +84,7 @@ export const AuthStore = create((set, get) => ({
     try {
       await axiosInstance.post("/api/auth/logout");
       
+      localStorage.removeItem("jwt_token");
       set({ authUser: null });
       get().disconnectSocket();
       
@@ -100,6 +109,7 @@ export const AuthStore = create((set, get) => ({
   deleteAccount: async () => {
     try {
       await axiosInstance.delete("/api/auth/delete-account");
+      localStorage.removeItem("jwt_token");
       set({ authUser: null });
       get().disconnectSocket();
       localStorage.clear();

@@ -55,9 +55,14 @@ io.on("connection", (socket) => {
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
   socket.on("disconnect", () => {
-    console.log("A user disconnected", socket.id);
-    if (userId && userId !== "undefined") {
+    console.log("Socket disconnected:", socket.id, "for userId:", userId);
+    // ONLY remove from map if THIS socket is still the current one for this user
+    // This prevents a reconnect's new socket from being wiped out by the old socket's disconnect
+    if (userId && userSocketMap[userId] === socket.id) {
       delete userSocketMap[userId];
+      console.log("Removed user from online map. Current online:", Object.keys(userSocketMap));
+    } else {
+      console.log("Stale socket disconnect ignored (newer socket exists). Online:", Object.keys(userSocketMap));
     }
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
   });

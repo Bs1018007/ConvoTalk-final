@@ -38,13 +38,19 @@ export function getReceiverSocketId(userId) {
 const userSocketMap = {};
 
 io.on("connection", (socket) => {
-  console.log("A user connected", socket.id);
-
   const userId = socket.handshake.query.userId;
-  if (userId && userId !== "undefined") {
+  console.log("=== SOCKET CONNECTION ===");
+  console.log("Socket ID:", socket.id);
+  console.log("userId from query:", userId, "| type:", typeof userId);
+  console.log("Full query:", JSON.stringify(socket.handshake.query));
+  
+  if (userId && userId !== "undefined" && userId !== "null") {
     userSocketMap[userId] = socket.id;
-    console.log("Online users:", Object.keys(userSocketMap));
   }
+
+  console.log("Current userSocketMap:", JSON.stringify(userSocketMap));
+  console.log("Emitting onlineUsers:", Object.keys(userSocketMap));
+  console.log("========================");
 
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 

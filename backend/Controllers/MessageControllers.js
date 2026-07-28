@@ -104,19 +104,24 @@ export const sendMessage = async (req, res) => {
           console.log("Sender:", senderUser.fullName);
           console.log("EMAIL_USER configured:", !!process.env.EMAIL_USER);
           console.log("EMAIL_PASS configured:", !!process.env.EMAIL_PASS);
-          const emailResult = await sendNotificationMail(
+          // Run email sending in the background without awaiting it!
+          // This prevents the sender from waiting 10 seconds if the email connection times out.
+          sendNotificationMail(
             receiverUser.email,
             "📩 New message on ConvoTalk",
             `${senderUser.fullName} sent you a message. Open ConvoTalk ${FRONTEND_URL} to check it out.`
-          );
-          if (emailResult) {
-            console.log("Email sent successfully!");
-          } else {
-            console.log("Email failed to send.");
-          }
-          console.log("==========================");
+          ).then(emailResult => {
+            if (emailResult) {
+              console.log("Email sent successfully!");
+            } else {
+              console.log("Email failed to send.");
+            }
+            console.log("==========================");
+          }).catch(mailErr => {
+            console.error("Email sending exception:", mailErr.message);
+          });
         } catch (mailErr) {
-          console.error("Email sending exception:", mailErr.message);
+          console.error("Email setup exception:", mailErr.message);
         }
       }
     }

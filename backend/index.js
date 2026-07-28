@@ -19,14 +19,16 @@ console.log("passport imported");
 import GoogleAuthRoutes from "./Routes/GoogleAuthRoutes.js";
 
 const port = process.env.PORT || 3000;
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const FRONTEND_URL = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/+$/, "");
+
+console.log("Express CORS origin:", FRONTEND_URL);
 
 app.use(express.json({ limit: "10mb" }));
 app.use(Cookieparser());
 
 app.use(
   cors({
-    origin: [FRONTEND_URL, "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"],
+    origin: [FRONTEND_URL, "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "https://convo-talk-final.vercel.app"],
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })

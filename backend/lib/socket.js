@@ -2,13 +2,26 @@ import { Server } from "socket.io";
 import http from "http";
 import express from "express";
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+// Strip trailing slash to prevent CORS mismatches
+const FRONTEND_URL = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/+$/, "");
 
 const app = express();
 const server = http.createServer(app);
+
+// Build allowed origins list - include both with and without trailing slash
+const allowedOrigins = [
+  FRONTEND_URL,
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "https://convo-talk-final.vercel.app",
+];
+
+console.log("Socket.io CORS allowed origins:", allowedOrigins);
+
 const io = new Server(server, {
   cors: {
-    origin: [FRONTEND_URL, "http://localhost:5173", "http://127.0.0.1:5173"],
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
     credentials: true,
   },
   // Keep connections alive behind Render's reverse proxy
@@ -30,6 +43,7 @@ io.on("connection", (socket) => {
   const userId = socket.handshake.query.userId;
   if (userId && userId !== "undefined") {
     userSocketMap[userId] = socket.id;
+    console.log("Online users:", Object.keys(userSocketMap));
   }
 
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
